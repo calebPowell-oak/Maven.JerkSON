@@ -27,7 +27,6 @@ public class ItemParser {
             try {
                 realItems.add(parseSingleItem(x));
             } catch (ItemParseException e) {
-                System.out.println("Invalid jerkson format.");
                 exceptionCount++;
             }
         }
@@ -72,15 +71,19 @@ public class ItemParser {
             matchers[3].find();
             expiration = matchers[3].group(1);
         } catch (IllegalStateException e) {
-            exceptionCount++;
-            return null;
+            throw new ItemParseException();
         }
 
-        if(name.equals("")) {
-            exceptionCount++;
-            return null;
+        if(name.equals("") || type.equals("")) {
+            throw new ItemParseException();
+        } else if(!name.matches("[a-zA-Z]*")){
+            throw new ItemParseException();
         }
 
-        return new Item(name, price, type, expiration);
+        return new Item(name.toLowerCase(), price, type.toLowerCase(), expiration);
+    }
+
+    public Integer getExceptionCount() {
+        return exceptionCount;
     }
 }

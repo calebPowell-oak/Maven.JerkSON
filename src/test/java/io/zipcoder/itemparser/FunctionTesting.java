@@ -60,8 +60,10 @@ public class FunctionTesting {
 
         for(Item x : items){
             if(x != null) {
-                System.out.println(x.getName().toLowerCase());
+//                System.out.println(x.getName().toLowerCase());
+                System.out.println(x.toString());
             }
         }
+        System.out.println(itemParser.getExceptionCount());
     }
 }
