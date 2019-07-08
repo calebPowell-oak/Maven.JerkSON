@@ -17,7 +17,7 @@ public class ItemParser {
         ArrayList<String> itemStrings = new ArrayList<>();
 
         Pattern p = Pattern.compile(".*?##");
-        Matcher m = p.matcher(simplifyJerkson(valueToParse));
+        Matcher m = p.matcher(valueToParse);
 
         while(m.find()){
             itemStrings.add(m.group());
@@ -42,6 +42,9 @@ public class ItemParser {
 
     public Item parseSingleItem(String singleItem) throws ItemParseException {
         //naMe:Milk; price:3.23; type:Food; expiration:1/25/2016 (##)
+
+        singleItem = simplifyJerkson(singleItem);
+
         String name;
         Double price;
         String type;
