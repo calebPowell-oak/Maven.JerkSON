@@ -42,13 +42,11 @@ public class ItemParser {
     }
 
     public Item parseSingleItem(String singleItem) throws ItemParseException {
-        if(singleItem == null) throw new ItemParseException();
-
         Pattern extract = Pattern.compile(
-                "\\w*:([A-Za-z]+);\\w*:(\\d*\\.\\d*);\\w*:(\\w+);\\w*:(\\d+\\/\\d+\\/\\d+)##");
+                "\\w*:([A-Za-z]+);\\w*:(\\d*\\.\\d+);\\w*:(\\w+);\\w*:(\\d+\\/\\d+\\/\\d+)##");
         Matcher m = extract.matcher(simplifyJerkson(singleItem.toLowerCase()));
-        m.find();
 
+        m.find();
         if(m.matches()){
             return new Item(m.group(1), Double.valueOf(m.group(2)), m.group(3), m.group(4));
         } else {
