@@ -7,31 +7,32 @@ import io.zipcoder.utils.match.Match;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ItemParser {
     private Integer exceptionCount = 0;
+
     public List<Item> parseItemList(String valueToParse) {
-        ArrayList<Item> realItems = new ArrayList<>();
-        ArrayList<String> itemStrings = new ArrayList<>();
-
-        Pattern p = Pattern.compile(".*?##");
-        Matcher m = p.matcher(valueToParse);
-
-        while(m.find()){
-            itemStrings.add(m.group());
-        }
-
-        for(String x : itemStrings){
+        List<String> itemStrings = new ArrayList<>();
+        Pattern pObject = Pattern.compile(".*?##");
+        Matcher matcher = pObject.matcher(valueToParse);
+        while(matcher.find())
+            itemStrings.add(matcher.group());
+        return itemStrings.stream().map(x -> {
             try {
-                realItems.add(parseSingleItem(x));
+                return parseSingleItem(x);
             } catch (ItemParseException e) {
                 exceptionCount++;
+                return null;
             }
-        }
-
-        return realItems;
+        }).filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     public static String simplifyJerkson(String stringToSimplify){
@@ -41,49 +42,19 @@ public class ItemParser {
     }
 
     public Item parseSingleItem(String singleItem) throws ItemParseException {
-        //naMe:Milk; price:3.23; type:Food; expiration:1/25/2016 (##)
+        if(singleItem == null) throw new ItemParseException();
 
-        singleItem = simplifyJerkson(singleItem);
+        Pattern extract = Pattern.compile(
+                "\\w*:([A-Za-z]+);\\w*:(\\d*\\.\\d*);\\w*:(\\w+);\\w*:(\\d+\\/\\d+\\/\\d+)##");
+        Matcher m = extract.matcher(simplifyJerkson(singleItem.toLowerCase()));
+        m.find();
 
-        String name;
-        Double price;
-        String type;
-        String expiration;
-
-        Pattern[] patterns = {
-            Pattern.compile("name:(\\w*);", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("price:(\\d*\\.\\d*);", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("type:(\\w*);", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("expiration:(\\d+/\\d+/\\d+)##", Pattern.CASE_INSENSITIVE)
-        };
-
-        Matcher[] matchers = {
-                patterns[0].matcher(singleItem),
-                patterns[1].matcher(singleItem),
-                patterns[2].matcher(singleItem),
-                patterns[3].matcher(singleItem)
-        };
-
-        try {
-            matchers[0].find();
-            name = matchers[0].group(1);
-            matchers[1].find();
-            price = Double.parseDouble(matchers[1].group(1));
-            matchers[2].find();
-            type = matchers[2].group(1);
-            matchers[3].find();
-            expiration = matchers[3].group(1);
-        } catch (IllegalStateException e) {
+        if(m.matches()){
+            return new Item(m.group(1), Double.valueOf(m.group(2)), m.group(3), m.group(4));
+        } else {
             throw new ItemParseException();
         }
 
-        if(name.equals("") || type.equals("")) {
-            throw new ItemParseException();
-        } else if(!name.matches("[a-zA-Z]*")){
-            throw new ItemParseException();
-        }
-
-        return new Item(name.toLowerCase(), price, type.toLowerCase(), expiration);
     }
 
     public Integer getExceptionCount() {
