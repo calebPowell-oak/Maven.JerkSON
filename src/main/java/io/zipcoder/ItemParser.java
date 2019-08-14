@@ -20,10 +20,12 @@ public class ItemParser {
 
     public List<Item> parseItemList(String valueToParse) {
         List<String> itemStrings = new ArrayList<>();
-        Pattern pObject = Pattern.compile(".*?##");
-        Matcher matcher = pObject.matcher(valueToParse);
-        while(matcher.find())
+        Pattern pattern = Pattern.compile(".*?##");
+        Matcher matcher = pattern.matcher(valueToParse);
+        while(matcher.find()) {
             itemStrings.add(matcher.group());
+        }
+
         return itemStrings.stream().map(x -> {
             try {
                 return parseSingleItem(x);
@@ -31,7 +33,8 @@ public class ItemParser {
                 exceptionCount++;
                 return null;
             }
-        }).filter(Objects::nonNull)
+        })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
